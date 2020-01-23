@@ -189,11 +189,6 @@ class Edit extends Component {
                             value={apiKey}
                             placeholder={__('Enter API Key')}
                             onChange={val => this.initMapLibrary(val)} />*/}
-                        {!this.state.apiKey &&
-                            <Fragment>
-                                <p>{__('Add Your API Key')} <a href={qubely_admin.setting_url} target="_blank">{__('here')}</a></p>
-                            </Fragment>
-                        }
                         <RangeControl
                             label={__('Zoom')}
                             value={zoom}
@@ -208,9 +203,20 @@ class Edit extends Component {
                             onChange={(val) => this.setSettings('height', val)} />
                     </PanelBody>
 
-                    {!apiKey &&
-                        <b><i>{__('Need Google API key extend feature.')}</i></b>
+                    {!this.state.apiKey &&
+                        <Fragment>
+                            <p style={{
+                                color: '#856404',
+                                fontStyle: 'italic',
+                                padding: '10px',
+                                background: '#fff3cd',
+                                border: '1px solid #ffeeba'
+                            }}>
+                                {__('Need Google API key to extend feature,')} <a href={qubely_admin.setting_url} target="_blank">{__('Add your API key here')}</a>
+                            </p>
+                        </Fragment>
                     }
+
                     <div className={apiKey ? '' : 'not-clickable'}>
                         <PanelBody title={__('Map Style')}>
                             <div style={{ overflow: 'auto' }}>
