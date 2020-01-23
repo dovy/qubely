@@ -14,18 +14,21 @@ class Edit extends Component {
         this.initMapLibrary = this.initMapLibrary.bind(this);
         this.setSettings = this.setSettings.bind(this);
         this.getStyles = this.getStyles.bind(this);
-        this.state = { spacer: true }
+        this.state = {
+            spacer: true,
+            apiKey: qubely_admin.gmap_api_key
+        }
     }
 
     componentDidMount() {
-        const { setAttributes, clientId, attributes: { uniqueId, apiKey } } = this.props
+        const { setAttributes, clientId, attributes: { uniqueId } } = this.props
         const _client = clientId.substr(0, 6)
         if (!uniqueId) {
             setAttributes({ uniqueId: _client });
         } else if (uniqueId && uniqueId != _client) {
             setAttributes({ uniqueId: _client });
         }
-        this.initMapLibrary(apiKey);
+        this.initMapLibrary(this.state.apiKey);
 
         const mapIframe = this.refs.qubelyGoogleMapIframe;
         if (typeof mapIframe !== 'undefined') {
@@ -33,38 +36,19 @@ class Edit extends Component {
                 e.preventDefault();
             });
         }
+
     }
 
     initMapLibrary(apiKey) {
-        const { initMap, initSearchBox, loadScriptAsync } = this;
+        const { initMap, initSearchBox } = this;
         this.props.setAttributes({ apiKey: apiKey });
         if (apiKey) {
-            const apiURL = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap`;
             window.initMap = initMap;
             if (typeof google === 'object' && typeof google.maps === 'object') {
                 initMap();
                 initSearchBox();
-            } else {
-                loadScriptAsync(apiURL).then(() => {
-                    initMap();
-                    initSearchBox();
-                });
             }
         }
-    }
-
-    loadScriptAsync(src) {
-        return new Promise((resolve, reject) => {
-            const tag = document.createElement('script');
-            tag.id = "qubely-gmap"
-            tag.src = src;
-            tag.async = true;
-            tag.onload = () => {
-                resolve();
-            };
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        });
     }
 
     initSearchBox() {
@@ -200,15 +184,14 @@ class Edit extends Component {
                 <InspectorControls key="inspector">
 
                     <PanelBody title={__('Map Settings', 'qubely')}>
-                        <TextControl
+                        {/*<TextControl
                             label={__('API Key')}
                             value={apiKey}
                             placeholder={__('Enter API Key')}
-                            onChange={val => this.initMapLibrary(val)} />
-                        {!apiKey &&
+                            onChange={val => this.initMapLibrary(val)} />*/}
+                        {!this.state.apiKey &&
                             <Fragment>
-                                <i>{__('Generate your Google API key in')} <a href='https://developers.google.com/maps/documentation/javascript/get-api-key' target="_blank">{__('here')}</a>.</i>
-                                <Separator />
+                                <p>{__('Add Your API Key')} <a href={qubely_admin.setting_url} target="_blank">{__('here')}</a></p>
                             </Fragment>
                         }
                         <RangeControl

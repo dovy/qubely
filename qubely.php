@@ -38,17 +38,9 @@ define('QUBELY_DIR_PATH', plugin_dir_path(__FILE__));
 // Include Require File
 require_once QUBELY_DIR_PATH . 'core/initial-setup.php'; // Initial Setup Data
 
-/**
- * Add qubely admin options page
- */
-require_once QUBELY_DIR_PATH . 'core/Options.php';   // Loading QUBELY Blocks Main Files
 
 // Page Template Added
 require_once QUBELY_DIR_PATH.'core/Template.php';
-
-if (class_exists('QUBELY_Options')){
-    new QUBELY_Options();
-}
 
 // Version Check & Include Core
 if (!version_compare(PHP_VERSION, '5.4', '>=')) {

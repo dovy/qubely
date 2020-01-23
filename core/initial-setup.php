@@ -20,7 +20,13 @@ if (! class_exists('QUBELY_Initial_Setup')) {
 
         // Init Options Data Init
         public function qubely_option_data() {
-            $option_data = array('css_save_as' => 'wp_head');
+            $option_data = array(
+                'css_save_as' => 'wp_head',
+                'gmap_api_key' => '',
+                'recaptcha_site_key' => '',
+                'recaptcha_secret_key' => ''
+            );
+
             if (!get_option('qubely_options')) {
                 update_option('qubely_options', $option_data);
             }
