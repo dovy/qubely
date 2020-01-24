@@ -44,10 +44,8 @@ class Edit extends Component {
         this.props.setAttributes({ apiKey: apiKey });
         if (apiKey) {
             window.initMap = initMap;
-            if (typeof google === 'object' && typeof google.maps === 'object') {
-                initMap();
-                initSearchBox();
-            }
+            initMap();
+            initSearchBox();
         }
     }
 
@@ -57,6 +55,7 @@ class Edit extends Component {
         // Create the search box and link it to the UI element.
         const input = this.refs.mapAddress;
         const autocomplete = new google.maps.places.Autocomplete(input);
+
         autocomplete.setFields(['place_id', 'geometry', 'formatted_address']);
         autocomplete.addListener('place_changed', () => {
             var place = autocomplete.getPlace();
@@ -88,11 +87,11 @@ class Edit extends Component {
         const map = new google.maps.Map(mapCanvas, mapOptions);
 
         if (placeID) {
+
             var request = {
                 placeId: placeID,
                 fields: ['place_id', 'geometry', 'name', 'formatted_address', 'adr_address', 'website']
             };
-
             const service = new google.maps.places.PlacesService(map);
             service.getDetails(request, (place, status) => {
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
@@ -131,9 +130,8 @@ class Edit extends Component {
     }
 
     setSettings(type, val) {
-        const { attributes: { apiKey }, setAttributes } = this.props;
-        setAttributes({ [type]: val });
-        if (apiKey) setTimeout(() => this.initMap(), 300);
+        this.props.setAttributes({ [type]: val });
+        if (this.state.apiKey) setTimeout(() => this.initMap(), 300);
     }
 
     getStyles(string) {
@@ -154,7 +152,6 @@ class Edit extends Component {
                 className,
                 zoom,
                 height,
-                apiKey,
                 mapAddress,
                 selectedStyle,
                 showZoomButtons,
@@ -178,17 +175,29 @@ class Edit extends Component {
                 globalCss }
         } = this.props;
         if (uniqueId) { CssGenerator(this.props.attributes, 'map', uniqueId); }
+        const {apiKey} = this.state;
+
+        const apiSuccessStyle = {
+            color: '#155724',
+            fontStyle: 'italic',
+            padding: '10px',
+            background: '#d4edda',
+            border: '1px solid #c3e6cb'
+        }
+
+        const apiErrorStyle = {
+            color: '#856404',
+            fontStyle: 'italic',
+            padding: '10px',
+            background: '#fff3cd',
+            border: '1px solid #ffeeba'
+        }
 
         return (
             <Fragment>
                 <InspectorControls key="inspector">
 
                     <PanelBody title={__('Map Settings', 'qubely')}>
-                        {/*<TextControl
-                            label={__('API Key')}
-                            value={apiKey}
-                            placeholder={__('Enter API Key')}
-                            onChange={val => this.initMapLibrary(val)} />*/}
                         <RangeControl
                             label={__('Zoom')}
                             value={zoom}
@@ -203,18 +212,16 @@ class Edit extends Component {
                             onChange={(val) => this.setSettings('height', val)} />
                     </PanelBody>
 
-                    {!this.state.apiKey &&
-                        <Fragment>
-                            <p style={{
-                                color: '#856404',
-                                fontStyle: 'italic',
-                                padding: '10px',
-                                background: '#fff3cd',
-                                border: '1px solid #ffeeba'
-                            }}>
-                                {__('Need Google API key to extend feature,')} <a href={qubely_admin.setting_url} target="_blank">{__('Add your API key here')}</a>
+                    {
+                        apiKey ? (
+                            <p style={apiSuccessStyle}>
+                                {__('Your API key is activated, ')} {ApiLink(__('Click here change'))}
                             </p>
-                        </Fragment>
+                        ) : (
+                            <p style={apiErrorStyle}>
+                                {__('Need Google API key to extend feature, ')} {ApiLink(__('Add your API key here '))}
+                            </p>
+                        )
                     }
 
                     <div className={apiKey ? '' : 'not-clickable'}>
@@ -294,7 +301,7 @@ class Edit extends Component {
 
                 <div className={`qubely-block-${uniqueId}${className ? ` ${className}` : ''}`}>
                     <div className={apiKey ? 'qubely-google-map' : 'qubely-gmap-hide'}>
-                        <input ref="mapAddress" type="text" className="qubely-google-gmap-input" placeholder={__('Find your location…')} />
+                        <input ref="mapAddress" value={mapAddress} type="text" className="qubely-google-gmap-input" placeholder={__('Find your location…')} />
                         <div ref="qubelyGoogleMap" style={{ height: parseInt(height, 10) + 'px', width: '100%' }} />
                     </div>
                     {!apiKey &&
@@ -303,7 +310,7 @@ class Edit extends Component {
                                 label={__('')}
                                 value={mapAddress}
                                 placeholder={__('Enter your address')}
-                                onChange={val => this.props.setAttributes({ mapAddress: val })}
+                                onChange={val => setAttributes({ mapAddress: val })}
                             />
                             <iframe
                                 width="100%"

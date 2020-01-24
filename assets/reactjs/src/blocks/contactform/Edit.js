@@ -47,6 +47,11 @@ class Edit extends Component {
         } else if (uniqueId && uniqueId != _client) {
             setAttributes({ uniqueId: _client });
         }
+
+        setAttributes({
+            reCaptchaSecretKey: qubely_admin.recaptcha_site_key,
+            reCaptchaSiteKey: qubely_admin.recaptcha_secret_key
+        });
     }
 
     setSettings(type, val, index = -1) {
@@ -117,6 +122,24 @@ class Edit extends Component {
             globalCss } = attributes;
 
         if (uniqueId) { CssGenerator(this.props.attributes, 'contactform', uniqueId); }
+
+        const apiSuccessStyle = {
+            color: '#155724',
+            fontStyle: 'italic',
+            padding: '10px',
+            background: '#d4edda',
+            border: '1px solid #c3e6cb'
+        }
+
+        const apiErrorStyle = {
+            color: '#856404',
+            fontStyle: 'italic',
+            padding: '10px',
+            background: '#fff3cd',
+            border: '1px solid #ffeeba'
+        }
+
+        const ApiLink = text => <a href={qubely_admin.setting_url} target="_blank">{text}</a>;
 
         return (
             <Fragment>
@@ -347,25 +370,21 @@ class Edit extends Component {
                                     onChange={val => setAttributes({ formErrorMessage: val })}
                                     help={__('Set your desired message for form submission error. Leave blank for default.')}
                                 />
-                                <Toggle label={__('Enable reCAPTCHA')} value={reCaptcha} onChange={val => setAttributes({ reCaptcha: val })} />
+                                <Toggle disabled label={__('Enable reCAPTCHA')} value={reCaptcha} onChange={val => setAttributes({ reCaptcha: val })} />
                                 {reCaptcha &&
-                                    <div>
-                                        <TextControl
-                                            label={__('Site Key ')}
-                                            value={reCaptchaSiteKey}
-                                            onChange={val => setAttributes({ reCaptchaSiteKey: val })}
-                                            placeholder={__('Enter Google Site Key')}
-                                        />
-                                        <TextControl
-                                            label={__('Secret Key ')}
-                                            value={reCaptchaSecretKey}
-                                            onChange={val => setAttributes({ reCaptchaSecretKey: val })}
-                                            placeholder={__('Enter Google Secret Key')}
-                                        />
-                                        <span className="qubely-recaptcha-help">
-                                            Get reCAPTCHA(v2) keys from <a href='//www.google.com/recaptcha/admin/' >{__('www.google.com/recaptcha/admin/')} </a>
-                                        </span>
-                                    </div>
+                                    <Fragment>
+                                        {
+                                            (reCaptchaSiteKey && reCaptchaSecretKey) ? (
+                                                <p style={apiSuccessStyle}>
+                                                    {__('Your reCAPTCHA is activated, ')} {ApiLink(__('Edit site key & secret key'))}
+                                                </p>
+                                            ) : (
+                                                <p style={apiErrorStyle}>
+                                                    {__('Need site key & secret key to enable reCAPTCHA, ')} {ApiLink(__('Add your keys here '))}
+                                                </p>
+                                            )
+                                        }
+                                    </Fragment>
                                 }
                             </Tab>
                             <Tab tabTitle={__('Email')}>

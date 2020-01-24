@@ -19,7 +19,7 @@ if(!class_exists('Qubely_Getting_Started')) {
         {
             add_menu_page(
                 'Qubely',
-                'Menu Title',
+                'Qubely',
                 'manage_options',
                 'qubely-getting-started',
                 array(),

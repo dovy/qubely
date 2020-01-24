@@ -2,7 +2,23 @@ const { Component } = wp.element;
 const { HelperFunction: { animationAttr } } = wp.qubelyComponents
 class Save extends Component {
     render() {
-        const { uniqueId, animation, placeID, mapAddress, zoom, height, apiKey, mapStyle, showZoomButtons, showMapTypeButtons, showStreetViewButton, showFullscreenButton, optionDraggable, showMarker, iconPointer } = this.props.attributes;
+        const {
+            uniqueId,
+            animation,
+            placeID,
+            mapAddress,
+            zoom,
+            apiKey,
+            height,
+            mapStyle,
+            showZoomButtons,
+            showMapTypeButtons,
+            showStreetViewButton,
+            showFullscreenButton,
+            optionDraggable,
+            showMarker,
+            iconPointer
+        } = this.props.attributes;
         const attrs = {
             'data-apiKey': apiKey,
             'data-placeID': placeID,
@@ -16,6 +32,7 @@ class Save extends Component {
             'data-icon-pointer': iconPointer,
             'data-styles': mapStyle,
         };
+
         return (
             <div className={`qubely-block-${uniqueId}`} {...animationAttr(animation)}>
                 { apiKey ?

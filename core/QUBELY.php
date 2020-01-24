@@ -41,8 +41,7 @@ class QUBELY
         add_action('wp_enqueue_scripts', array($this, 'qubely_enqueue_scripts'));
 
         // Load Inline Scripts
-        add_action('wp_enqueue_scripts', array($this, 'qubely_inline_header_scripts'), 0);
-        add_action('admin_head', array($this, 'qubely_inline_admin_header_scripts'), 0);
+
         add_action('wp_footer', array($this, 'qubely_inline_footer_scripts'));
 
         // Add post meta key
@@ -111,8 +110,10 @@ class QUBELY
             'all_taxonomy' => $this->get_all_taxonomy(),
             'image_sizes'  => $this->get_all_image_sizes(),
             'palette' => $palette,
-            'gmap_api_key' => $options['gmap_api_key'],
-            'setting_url' => admin_url('admin.php?page=qubely-settings')
+            'gmap_api_key' => (is_array($options) && isset($options['gmap_api_key'])) ? $options['gmap_api_key'] : '',
+            'recaptcha_site_key' => (is_array($options) && isset($options['recaptcha_site_key'])) ? $options['recaptcha_site_key'] : '',
+            'recaptcha_secret_key' => (is_array($options) && isset($options['recaptcha_secret_key'])) ? $options['recaptcha_secret_key'] : '',
+            'setting_url' => admin_url('admin.php?page=qubely-settings&tab=configuration')
         ));
     }
 
@@ -171,9 +172,12 @@ class QUBELY
         wp_enqueue_style('qubely-options', QUBELY_DIR_URL . 'assets/css/options.css', false, QUBELY_VERSION);
         wp_enqueue_script('qubely-magnific-popup', QUBELY_DIR_URL . 'assets/js/qubely.magnific-popup.js', array('jquery'), QUBELY_VERSION, true);
         wp_enqueue_script('jquery-animatedHeadline', QUBELY_DIR_URL . 'assets/js/jquery.animatedheadline.js', array('jquery'), QUBELY_VERSION, true);
-        if(isset($options['gmap_api_key']) && !empty($options['gmap_api_key'])){
-            $gmap_url = '//maps.googleapis.com/maps/api/js?libraries=places&callback=initMap&key='. $options['gmap_api_key'];
+        if(isset($options['gmap_api_key'])){
+            $gmap_url = '//maps.googleapis.com/maps/api/js?key='.$options['gmap_api_key'].'&libraries=places';
             wp_enqueue_script('qubely-gmap', $gmap_url, array(), QUBELY_VERSION, true);
+            wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery', 'qubely-gmap'), QUBELY_VERSION, true);
+        }else{
+            wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery'), QUBELY_VERSION, true);
         }
         wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery'), QUBELY_VERSION, true);
         wp_enqueue_script('qubely-block-contactform', QUBELY_DIR_URL . 'assets/js/blocks/contactform.js', array('jquery'), QUBELY_VERSION, true);
@@ -347,10 +351,12 @@ class QUBELY
 
             if (in_array('qubely/map', $available_blocks)) {
                 if(isset($options['gmap_api_key'])){
-                    $gmap_url = '//maps.googleapis.com/maps/api/js?libraries=places&callback=initMap&key='. $options['gmap_api_key'];
+                    $gmap_url = '//maps.googleapis.com/maps/api/js?key='.$options['gmap_api_key'].'&libraries=places';
                     wp_enqueue_script('qubely-gmap', $gmap_url, array(), QUBELY_VERSION, true);
+                    wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery', 'qubely-gmap'), QUBELY_VERSION, true);
+                }else{
+                    wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery'), QUBELY_VERSION, true);
                 }
-                wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery'), QUBELY_VERSION, true);
             }
 
             if (in_array('qubely/videopopup', $available_blocks) || in_array('qubely/gallery', $available_blocks)) {
@@ -358,7 +364,8 @@ class QUBELY
             }
 
             if (in_array('qubely/contactform', $available_blocks) || in_array('qubely/form', $available_blocks)) {
-                wp_enqueue_script('qubely-block-contactform', QUBELY_DIR_URL . 'assets/js/blocks/contactform.js', array('jquery'), QUBELY_VERSION);
+//                wp_enqueue_script('qubely-block-recaptcha', '//www.google.com/recaptcha/api.js?onload=initGoogleReChaptcha&render=explicit', array(), QUBELY_VERSION);
+                wp_enqueue_script('qubely-block-contactform', QUBELY_DIR_URL . 'assets/js/blocks/contactform.js', array('jquery', 'qubely-block-recaptcha'), QUBELY_VERSION);
             }
 
             if ($has_interaction) {
@@ -390,10 +397,13 @@ class QUBELY
 
             if (false !== strpos($post, '<!-- wp:' . 'qubely/map' . ' ')) {
                 if(isset($options['gmap_api_key'])){
-                    $gmap_url = '//maps.googleapis.com/maps/api/js?libraries=places&callback=initMap&key='. $options['gmap_api_key'];
+                    $gmap_url = '//maps.googleapis.com/maps/api/js?key='.$options['gmap_api_key'].'&libraries=places';
                     wp_enqueue_script('qubely-gmap', $gmap_url, array(), QUBELY_VERSION, true);
+                    wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery', 'qubely-gmap'), QUBELY_VERSION, true);
+                }else{
+                    wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery'), QUBELY_VERSION, true);
                 }
-                wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery'), QUBELY_VERSION, true);
+
             }
 
             if (false !== strpos($post, '<!-- wp:' . 'qubely/videopopup' . ' ') || false !== strpos($post, '<!-- wp:' . 'qubely/gallery' . ' ')) {
@@ -401,7 +411,8 @@ class QUBELY
             }
 
             if (false !== strpos($post, '<!-- wp:' . 'qubely/contactform' . ' ') || false !== strpos($post, '<!-- wp:' . 'qubely/form' . ' ')) {
-                wp_enqueue_script('qubely-block-contactform', QUBELY_DIR_URL . 'assets/js/blocks/contactform.js', array('jquery'), QUBELY_VERSION);
+//                wp_enqueue_script('qubely-block-recaptcha', '//www.google.com/recaptcha/api.js?onload=initGoogleReChaptcha&render=explicit', array(), QUBELY_VERSION);
+                wp_enqueue_script('qubely-block-contactform', QUBELY_DIR_URL . 'assets/js/blocks/contactform.js', array('jquery', 'qubely-block-recaptcha'), QUBELY_VERSION);
             }
 
             wp_enqueue_script('qubely-block-common', QUBELY_DIR_URL . 'assets/js/common-script.js', array('jquery'), QUBELY_VERSION, true);
@@ -428,54 +439,6 @@ class QUBELY
                     window.document.getElementsByTagName("head")[0].appendChild(cssInline);
                 }
             })
-        </script>
-        <?php
-    }
-
-    /**
-     * Load Inline Header Script
-     * @since 1.3.0
-     */
-    public function qubely_inline_header_scripts()
-    {
-        ?>
-        <script>
-            function loadScriptAsync(src) {
-                return new Promise((resolve, reject) => {
-                    const tag = document.createElement('script');
-                    tag.src = src;
-                    tag.async = true;
-                    tag.onload = () => {
-                        resolve();
-                    };
-                    const firstScriptTag = document.getElementsByTagName('script')[0];
-                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-                });
-            }
-        </script>
-        <?php
-    }
-
-    /**
-     * Load Inline Admin Header Script
-     * @since 1.3.0
-     */
-    public function qubely_inline_admin_header_scripts()
-    {
-        ?>
-        <script>
-            function loadScriptAsync(src) {
-                return new Promise((resolve, reject) => {
-                    const tag = document.createElement('script');
-                    tag.src = src;
-                    tag.async = true;
-                    tag.onload = () => {
-                        resolve();
-                    };
-                    const firstScriptTag = document.getElementsByTagName('script')[0];
-                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-                });
-            }
         </script>
         <?php
     }

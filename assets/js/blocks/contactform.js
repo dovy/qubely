@@ -42,26 +42,20 @@
             });
         });
 
-        //CONTACT FORM RECAPTCHA
-        const apiURL = 'https://www.google.com/recaptcha/api.js?onload=initGoogleReChaptcha&render=explicit';
-        loadScriptAsync(apiURL).then(() => {
-            window.initGoogleReChaptcha = () => {
-                $('form.qubely-form').each(function () {
-                    const $form = $(this);
-                    const reCaptcha = $form.find('input[name="recaptcha"]').val();
-                    const reCaptchaSiteKey = $form.find('input[name="recaptcha-site-key"]').val();
-                    if (reCaptcha == 'true') {
-                        const qubelyRecaptcha = this.querySelector('form .qubely-google-recaptcha');
-                        grecaptcha.render(qubelyRecaptcha, {
-                            sitekey: reCaptchaSiteKey
-                        });
-                    }
-                });
+        window.initGoogleReChaptcha = () => {
+            $('form.qubely-form').each(function () {
+                const $form = $(this);
+                const reCaptcha = $form.find('input[name="recaptcha"]').val();
+                const reCaptchaSiteKey = $form.find('input[name="recaptcha-site-key"]').val();
+                if (reCaptcha == 'true') {
+                    const qubelyRecaptcha = this.querySelector('form .qubely-google-recaptcha');
+                    grecaptcha.render(qubelyRecaptcha, {
+                        sitekey: reCaptchaSiteKey
+                    });
+                }
+            });
 
-            };
-        });
-
-
+        };
 
         //FORM VALIDATION
         function checkFormValidation($form) {
