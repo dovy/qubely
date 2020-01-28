@@ -49,8 +49,8 @@ class Edit extends Component {
         }
 
         setAttributes({
-            reCaptchaSecretKey: qubely_admin.recaptcha_site_key,
-            reCaptchaSiteKey: qubely_admin.recaptcha_secret_key
+            reCaptchaSecretKey: qubely_admin.recaptcha_secret_key,
+            reCaptchaSiteKey: qubely_admin.recaptcha_site_key
         });
     }
 

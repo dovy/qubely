@@ -10,7 +10,7 @@ class QUBELY
     protected $qubely_api_request_body;
     protected $qubely_api_request_body_default;
     protected $option_keyword = 'qubely_global_options';
-
+    protected $qubely_options = false;
 
 
     /**
@@ -68,6 +68,8 @@ class QUBELY
 
         // dynamic blocks
         add_action('init', array($this, 'init_dynamic_blocks'));
+
+        $this->qubely_options = get_option('qubely_options');
     }
 
     /**
@@ -98,7 +100,7 @@ class QUBELY
      */
     public function qubely_editor_assets()
     {
-        $options = get_option('qubely_options');
+        $options = $this->qubely_options;
         wp_enqueue_script('qubely-blocks-js', QUBELY_DIR_URL . 'assets/js/qubely.dev.js', array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor'), QUBELY_VERSION, true);
         $palette = get_theme_support('qubely-color-palette');
         $palette = array_replace(array('#062040', '#566372', '#2084F9', '#F3F3F3', '#EEEEEE', '#FFFFFF'), ($palette ? $palette[0] : array()));
@@ -110,9 +112,9 @@ class QUBELY
             'all_taxonomy' => $this->get_all_taxonomy(),
             'image_sizes'  => $this->get_all_image_sizes(),
             'palette' => $palette,
-            'gmap_api_key' => (is_array($options) && isset($options['gmap_api_key'])) ? $options['gmap_api_key'] : '',
-            'recaptcha_site_key' => (is_array($options) && isset($options['recaptcha_site_key'])) ? $options['recaptcha_site_key'] : '',
-            'recaptcha_secret_key' => (is_array($options) && isset($options['recaptcha_secret_key'])) ? $options['recaptcha_secret_key'] : '',
+            'gmap_api_key' => (is_array($options) && !empty($options['gmap_api_key'])) ? $options['gmap_api_key'] : '',
+            'recaptcha_site_key' => (is_array($options) && !empty($options['recaptcha_site_key'])) ? $options['recaptcha_site_key'] : '',
+            'recaptcha_secret_key' => (is_array($options) && !empty($options['recaptcha_secret_key'])) ? $options['recaptcha_secret_key'] : '',
             'setting_url' => admin_url('admin.php?page=qubely-settings&tab=configuration')
         ));
     }
@@ -160,7 +162,7 @@ class QUBELY
     public function qubely_admin_assets()
     {
 
-        $options = get_option('qubely_options');
+        $options = $this->qubely_options;
         #START_REPLACE
         wp_enqueue_style('qubley-animated-headline-style', QUBELY_DIR_URL . 'assets/css/qubely.animatedheadline.css', false, QUBELY_VERSION);
         wp_enqueue_style('qubely-animation', QUBELY_DIR_URL . 'assets/css/animation.css', false, QUBELY_VERSION);
@@ -172,7 +174,7 @@ class QUBELY
         wp_enqueue_style('qubely-options', QUBELY_DIR_URL . 'assets/css/options.css', false, QUBELY_VERSION);
         wp_enqueue_script('qubely-magnific-popup', QUBELY_DIR_URL . 'assets/js/qubely.magnific-popup.js', array('jquery'), QUBELY_VERSION, true);
         wp_enqueue_script('jquery-animatedHeadline', QUBELY_DIR_URL . 'assets/js/jquery.animatedheadline.js', array('jquery'), QUBELY_VERSION, true);
-        if(isset($options['gmap_api_key'])){
+        if(!empty($options['gmap_api_key'])){
             $gmap_url = '//maps.googleapis.com/maps/api/js?key='.$options['gmap_api_key'].'&libraries=places';
             wp_enqueue_script('qubely-gmap', $gmap_url, array(), QUBELY_VERSION, true);
             wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery', 'qubely-gmap'), QUBELY_VERSION, true);
@@ -337,7 +339,7 @@ class QUBELY
 
         $blocks_meta_data = get_post_meta(get_the_ID(), '__qubely_available_blocks', true);
         $blocks_meta_data = unserialize($blocks_meta_data);
-        $options = get_option('qubely_options');
+        $options = $this->qubely_options;
 
         if (is_array($blocks_meta_data) && count($blocks_meta_data)) {
             $available_blocks = $blocks_meta_data['available_blocks'];
@@ -364,8 +366,16 @@ class QUBELY
             }
 
             if (in_array('qubely/contactform', $available_blocks) || in_array('qubely/form', $available_blocks)) {
-//                wp_enqueue_script('qubely-block-recaptcha', '//www.google.com/recaptcha/api.js?onload=initGoogleReChaptcha&render=explicit', array(), QUBELY_VERSION);
-                wp_enqueue_script('qubely-block-contactform', QUBELY_DIR_URL . 'assets/js/blocks/contactform.js', array('jquery', 'qubely-block-recaptcha'), QUBELY_VERSION);
+                $qubely_form_script_deps = array('jquery');
+                if(
+                    is_array($options) &&
+                    !empty($options['recaptcha_site_key']) &&
+                    !empty($options['recaptcha_secret_key'])
+                ){
+                    array_push($qubely_form_script_deps, 'qubely-block-recaptcha');
+                    wp_enqueue_script('qubely-block-recaptcha', '//www.google.com/recaptcha/api.js?onload=initGoogleReChaptcha&render=explicit', array(), QUBELY_VERSION);
+                }
+                wp_enqueue_script('qubely-block-contactform', QUBELY_DIR_URL . 'assets/js/blocks/contactform.js', $qubely_form_script_deps, QUBELY_VERSION);
             }
 
             if ($has_interaction) {
@@ -396,7 +406,7 @@ class QUBELY
             }
 
             if (false !== strpos($post, '<!-- wp:' . 'qubely/map' . ' ')) {
-                if(isset($options['gmap_api_key'])){
+                if(!empty($options['gmap_api_key'])){
                     $gmap_url = '//maps.googleapis.com/maps/api/js?key='.$options['gmap_api_key'].'&libraries=places';
                     wp_enqueue_script('qubely-gmap', $gmap_url, array(), QUBELY_VERSION, true);
                     wp_enqueue_script('qubely-block-map', QUBELY_DIR_URL . 'assets/js/blocks/map.js', array('jquery', 'qubely-gmap'), QUBELY_VERSION, true);
@@ -411,8 +421,16 @@ class QUBELY
             }
 
             if (false !== strpos($post, '<!-- wp:' . 'qubely/contactform' . ' ') || false !== strpos($post, '<!-- wp:' . 'qubely/form' . ' ')) {
-//                wp_enqueue_script('qubely-block-recaptcha', '//www.google.com/recaptcha/api.js?onload=initGoogleReChaptcha&render=explicit', array(), QUBELY_VERSION);
-                wp_enqueue_script('qubely-block-contactform', QUBELY_DIR_URL . 'assets/js/blocks/contactform.js', array('jquery', 'qubely-block-recaptcha'), QUBELY_VERSION);
+                $qubely_form_script_deps = array('jquery');
+                if(
+                    is_array($options) &&
+                    !empty($options['recaptcha_site_key']) &&
+                    !empty($options['recaptcha_secret_key'])
+                ){
+                    array_push($qubely_form_script_deps, 'qubely-block-recaptcha');
+                    wp_enqueue_script('qubely-block-recaptcha', '//www.google.com/recaptcha/api.js?onload=initGoogleReChaptcha&render=explicit', array(), QUBELY_VERSION);
+                }
+                wp_enqueue_script('qubely-block-contactform', QUBELY_DIR_URL . 'assets/js/blocks/contactform.js', $qubely_form_script_deps, QUBELY_VERSION);
             }
 
             wp_enqueue_script('qubely-block-common', QUBELY_DIR_URL . 'assets/js/common-script.js', array('jquery'), QUBELY_VERSION, true);
@@ -553,39 +571,8 @@ class QUBELY
             )
         );
 
-        // get plugin settings
-        register_rest_route(
-            'qubely/v1',
-            '/get_qubely_options/',
-            array(
-                array(
-                    'methods' => 'GET',
-                    'callback' => array($this, 'get_qubely_options'),
-                    'permission_callback' => function () {
-                        return current_user_can('edit_posts');
-                    },
-                    'args' => array()
-                )
-            )
-        );
 
     }
-
-    /**
-     * Get Plugin Settings
-     * @return array
-     */
-
-    public function get_qubely_options ()
-    {
-        try{
-            $options = get_option('qubely_options');
-            return ['success' => true, 'message' => 'Data Sent', 'data' => $options];
-        } catch (Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
 
     public function  append_qubely_css_callback($request)
     {
@@ -826,8 +813,7 @@ class QUBELY
     public function enqueue_block_css()
     {
         // if(!isset($_GET['preview'])){
-        $option_data = get_option('qubely_options');
-        $css_save_as = isset($option_data['css_save_as']) ? $option_data['css_save_as'] : 'wp_head';
+        $css_save_as = isset($this->qubely_options['css_save_as']) ? $this->qubely_options['css_save_as'] : 'wp_head';
         if ($css_save_as == 'filesystem') {
             add_action('wp_enqueue_scripts', array($this, 'enqueue_block_css_file'));
         } else {

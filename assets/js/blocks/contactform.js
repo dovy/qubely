@@ -17,6 +17,7 @@
                 e.preventDefault();
                 let formData = $form.serializeArray();
                 const isRequired = checkFormValidation($form); //check validation
+                const fieldErrorMessage = atob($form.find('input[name="field-error-message"]').val());
                 if (!isRequired) {
                     formData.push({ name: 'captcha', value: (typeof grecaptcha !== "undefined") ? grecaptcha.getResponse() : undefined });
                     jQuery.ajax({
@@ -38,6 +39,10 @@
                             $form.find(".qubely-form-message").html(`<div class="qubely-alert qubely-alert-danger">${textStatus} : ${error} - ${jqxhr.responseJSON}</div>`);
                         }
                     });
+                }else{
+                    if(fieldErrorMessage) {
+                        $form.find(".qubely-form-message").html(`<div class="qubely-alert qubely-alert-danger">${fieldErrorMessage}</div>`);
+                    }
                 }
             });
         });
