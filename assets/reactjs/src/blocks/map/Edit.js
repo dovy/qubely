@@ -176,7 +176,7 @@ class Edit extends Component {
         } = this.props;
         if (uniqueId) { CssGenerator(this.props.attributes, 'map', uniqueId); }
         const {apiKey} = this.state;
-
+        const ApiLink = text => <a href={qubely_admin.setting_url} target="_blank">{text}</a>;
         const apiSuccessStyle = {
             color: '#155724',
             fontStyle: 'italic',
