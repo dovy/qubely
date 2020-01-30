@@ -15,20 +15,37 @@ class Edit extends Component {
         this.setSettings = this.setSettings.bind(this);
         this.getStyles = this.getStyles.bind(this);
         this.state = {
-            spacer: true,
-            apiKey: qubely_admin.gmap_api_key
+            spacer: true
         }
     }
 
     componentDidMount() {
-        const { setAttributes, clientId, attributes: { uniqueId } } = this.props
+        const { setAttributes, clientId, attributes: { uniqueId, apiKey } } = this.props
         const _client = clientId.substr(0, 6)
+
+        if(!qubely_admin.gmap_api_key && apiKey) {
+            qubely_admin.gmap_api_key = apiKey
+            wp.apiFetch({
+                path: '/qubely/v1/update_setting_option/',
+                method: 'POST',
+                data: { gmap_api_key:  apiKey}
+            }).then(data => {
+                console.log(data)
+                location.reload();
+            })
+        }
+
+        if(qubely_admin.gmap_api_key) {
+            this.props.setAttributes({ apiKey: qubely_admin.gmap_api_key });
+        }
+
         if (!uniqueId) {
             setAttributes({ uniqueId: _client });
         } else if (uniqueId && uniqueId != _client) {
             setAttributes({ uniqueId: _client });
         }
-        this.initMapLibrary(this.state.apiKey);
+
+        this.initMapLibrary(apiKey);
 
         const mapIframe = this.refs.qubelyGoogleMapIframe;
         if (typeof mapIframe !== 'undefined') {
@@ -41,7 +58,6 @@ class Edit extends Component {
 
     initMapLibrary(apiKey) {
         const { initMap, initSearchBox } = this;
-        this.props.setAttributes({ apiKey: apiKey });
         if (apiKey) {
             window.initMap = initMap;
             initMap();
@@ -84,6 +100,9 @@ class Edit extends Component {
             draggable: optionDraggable,
             styles: mapStyle ? getStyles(mapStyle) : [],
         }
+
+        if(typeof google === 'undefined') return
+
         const map = new google.maps.Map(mapCanvas, mapOptions);
 
         if (placeID) {
@@ -131,7 +150,7 @@ class Edit extends Component {
 
     setSettings(type, val) {
         this.props.setAttributes({ [type]: val });
-        if (this.state.apiKey) setTimeout(() => this.initMap(), 300);
+        if (this.props.attributes.apiKey) setTimeout(() => this.initMap(), 300);
     }
 
     getStyles(string) {
@@ -172,10 +191,11 @@ class Edit extends Component {
                 globalZindex,
                 hideTablet,
                 hideMobile,
-                globalCss }
+                globalCss,
+                apiKey
+            }
         } = this.props;
         if (uniqueId) { CssGenerator(this.props.attributes, 'map', uniqueId); }
-        const {apiKey} = this.state;
         const ApiLink = text => <a href={qubely_admin.setting_url} target="_blank">{text}</a>;
         const apiSuccessStyle = {
             color: '#155724',

@@ -86,7 +86,7 @@ if (!class_exists('QUBELY_Options')) {
                 <form method="post" action="options.php">
                     <?php
                         settings_fields('qubely_options');
-                        $option_data    = get_option('qubely_options');
+                        $option_data  = get_option('qubely_options');
                     ?>
 
                     <div id="tab-configuration" class="qubely-admin-tab-content qubely-admin-tab-active" style="display: <?php echo (empty($current_tab) || $current_tab === 'configuration') ? 'block' : 'none'; ?>">

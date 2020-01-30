@@ -571,7 +571,34 @@ class QUBELY
             )
         );
 
+        // Append Qubely CSS
+        register_rest_route(
+            'qubely/v1',
+            '/update_setting_option/',
+            array(
+                array(
+                    'methods'  => 'POST',
+                    'callback' => array($this, 'update_setting_option'),
+                    'permission_callback' => function () {
+                        return current_user_can('edit_posts');
+                    },
+                    'args' => array()
+                )
+            )
+        );
+    }
 
+    public function update_setting_option($request) {
+        try{
+            $qubely_options = get_option('qubely_options');
+            if(is_array($qubely_options)){
+                $qubely_options['gmap_api_key'] = $request->get_params()['gmap_api_key'];
+                update_option('qubely_options', $qubely_options);
+            }
+            wp_send_json_success(['success' => true, 'message' => 'Update done', 'data' => $qubely_options, 'key' => $request->get_params() ]);
+        } catch (Exception $e){
+            wp_send_json_error(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function  append_qubely_css_callback($request)
