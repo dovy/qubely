@@ -65,7 +65,6 @@ jQuery(document).ready(function ($) {
         });
     });
 
-
     //ANIMATED HEADLINE BLOCK
     $('.qubely-block-animated-heading .animated-heading-text').each(function () {
         let animatedHeadline = $(this)

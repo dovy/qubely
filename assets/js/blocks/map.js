@@ -2,16 +2,8 @@ jQuery(document).ready(function ($) {
     //GOOGLE MAP BLOCK
     $('.qubely-google-map:not(.qubely-google-map-ready)').each(function () {
         const $mapItem = $(this);
-        $mapItem.addClass('qubely-google-maps-ready');
-        const apiKey = $mapItem.attr('data-apiKey');
-        const apiURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=true&libraries=places&key=' + apiKey;
-
         if (typeof google === 'object' && typeof google.maps === 'object') {
             initQubelyGoogleMap($mapItem);
-        } else {
-            loadScriptAsync(apiURL).then(() => {
-                initQubelyGoogleMap($mapItem);
-            });
         }
     });
 
